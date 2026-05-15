@@ -53,11 +53,6 @@ The system uses the Black-Scholes framework to compute:
 1. Probability of price movement above or below a target
 2. Volatility derived from historical price data
 3. Time-adjusted financial forecasting using risk-free rate assumptions
-How to Run
-git clone https://github.com/your-username/gold-blackscholes-predictor
-cd gold-blackscholes-predictor
-mvn clean install
-mvn exec:java
 
 Disclaimer
 
