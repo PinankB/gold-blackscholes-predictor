@@ -1,59 +1,135 @@
-Gold Price Prediction Engine (Black-Scholes Based)
+# Gold Price Prediction System (Black-Scholes Model)
 
-Overview
-This project is a Java-based quantitative finance engine that applies the Black-Scholes model to estimate the probability of gold reaching a specified target price within a given time horizon.
-It is designed as a modular system that will eventually integrate real-time market data and perform volatility-based financial forecasting.
+An intelligent Java application that estimates the probability of the SPDR Gold Trust ETF (GLD) ending above or below a target price by a specified day of the week. The application utilizes live and historical market data from the Alpha Vantage API and applies the Black-Scholes pricing framework to calculate historical volatility and statistical probabilities.
 
-Objective
+---
 
-The goal of this project is to: 
-1. Implement a Black-Scholes based probability model
-2. Analyze gold price movement using statistical methods
-3 .Integrate live market data through external APIs
-4. Build a structured backend-style Java application for financial computation
+##  Financial & Mathematical Foundations
 
-Current Status
-This project is actively under development.
+While the traditional Black-Scholes model is widely used to price European financial options, this engine utilizes the underlying mathematics to calculate the **risk-neutral probability** that the asset price ($S$) will exceed a target threshold ($K$) by a specific time ($T$).
 
-Completed:
+### How the Probability is Calculated
 
-1. Core project structure setup using Maven
-2. Black-Scholes mathematical model implementation
-3. Volatility calculation module
-4. Basic application flow design
+The probability that the price ends *above* the target price is determined by the cumulative distribution function (CDF) of the standard normal distribution, denoted as $N(d_2)$:
 
-In Progress:
+$$\text{Probability}_{\text{Above}} = N(d_2)$$
 
-1. Integration with Yahoo Finance API for live gold price data
-2. JSON parsing layer using Jackson
-3. Service layer refinement for API handling
+Where $d_2$ is defined as:
 
-Planned:
+$$d_2 = \frac{\ln(S / K) + (r - 0.5\sigma^2)T}{\sigma\sqrt{T}}$$
 
-1. Improved volatility calibration using historical data
-2.Data visualization layer
-3. Performance optimization for real-time computation
+* **$S$ (Current Price):** Fetched dynamically using the daily close of GLD.
+* **$K$ (Target Price):** User-defined target price.
+* **$T$ (Time to Maturity):** Number of remaining trading days in the week divided by 252 (annualized).
+* **$r$ (Risk-free Interest Rate):** Modeled dynamically inside the engine (currently set to a baseline of 4.39%).
+* **$\sigma$ (Volatility):** Annualized standard deviation of log returns calculated over a rolling 30-day window.
 
-Tech Stack
-Java 17
-Maven
-Jackson (JSON parsing)
-Java HttpClient (API requests)
-Black-Scholes financial model
+---
 
-The project is intended to use live market data from Yahoo Finance:
+## 🛠️ Features
 
-Gold Futures: GC=F
+* **Live Data Integration:** Seamlessly connects to Alpha Vantage to pull real-time and historical daily closing prices for the `GLD` ETF.
+* **Smart In-Memory Caching:** Limits outbound API requests by caching historical and current prices for 1 hour to prevent hitting free-tier API limits.
+* **Dynamic Volatility Engine:** Calculates historical annualized volatility ($\sigma$) on-the-fly using logarithmic daily returns.
+* **Trading Calendar Normalization:** Automatically adjusts weekend inputs to the nearest trading day and computes annualized time horizons based on standard market operating structures.
 
-API integration is currently under development and will be used to replace static or simulated inputs.
+---
 
-Methodology
+## 🚀 Getting Started
 
-The system uses the Black-Scholes framework to compute:
-1. Probability of price movement above or below a target
-2. Volatility derived from historical price data
-3. Time-adjusted financial forecasting using risk-free rate assumptions
+### Prerequisites
 
-Disclaimer
+* Java Development Kit (JDK) 17 or higher
+* Maven 3.6+
+* An Alpha Vantage API Key ([Get a free key here](https://www.google.com/search?q=https://www.alphavantage.co/support/%23api-key))
 
-This project is intended strictly for educational and research purposes. It does not provide financial advice and should not be used for real trading decisions.
+### 1. Environment Configuration
+
+The application reads your API key from your system's environment variables. Set it up before running the program:
+
+**On Linux/macOS:**
+
+```bash
+export alpha_vantage_api_key="YOUR_ACTUAL_API_KEY"
+
+```
+
+**On Windows (Command Prompt):**
+
+```cmd
+set alpha_vantage_api_key=YOUR_ACTUAL_API_KEY
+
+```
+
+**On Windows (PowerShell):**
+
+```powershell
+$env:alpha_vantage_api_key="YOUR_ACTUAL_API_KEY"
+
+```
+
+### 2. Building the Project
+
+Navigate to the root directory containing your `pom.xml` and run:
+
+```bash
+mvn clean package
+
+```
+
+### 3. Execution
+
+Run the main Black-Scholes interactive engine via:
+
+```bash
+mvn exec:java -Dexec.mainClass="com.pinank.goldpredictor.BlackScholesEngine"
+
+```
+
+---
+
+##  Usage Example
+
+When you start `BlackScholesEngine`, the application guides you through an interactive console session:
+
+```text
+=== Gold Price Prediction System ===
+
+Fetching fresh data from Alpha Vantage...
+Current gold price: $218.50
+Fetched 30 days of historical data
+
+What is your predicted price? $222.00
+What day is today? (MONDAY/TUESDAY/WEDNESDAY/THURSDAY/FRIDAY): TUESDAY
+Will price end above or below target? (ABOVE/BELOW): ABOVE
+
+==================================================
+PREDICTION RESULTS
+==================================================
+Current price (SPDR Gold Trust):    $218.50
+Target price:     $222.00
+Direction:        ABOVE
+Days remaining:   4
+Volatility (σ):   14.25%
+Risk-free rate:   4.39%
+--------------------------------------------------
+PROBABILITY:      18.42%
+==================================================
+
+```
+
+---
+
+## Project Architecture & Layout
+
+* `BlackScholesEngine.java` — Core execution orchestrator containing the core probability calculations using $N(d_2)$.
+* `service/AlphaVantageService.java` — Handles network interactions with the Alpha Vantage REST endpoint, parses incoming JSON arrays, and maintains local data caching.
+* `VolatilityCalculator.java` — Converts historical raw prices into daily log returns, extracts statistical variance, and handles annualization transformations ($\times\sqrt{252}$).
+* `NormalDistribution.java` — High-precision numerical evaluation of the Cumulative Distribution Function (CDF) using the *Abramowitz and Stegun* approximation.
+* `TradingCalendar.java` — Normalizes standard weekdays into structural remaining wall-clock market trading sessions.
+
+---
+
+##  Disclaimer
+
+*This tool is intended purely for educational and analytical purposes. It does not constitute financial or investment advice. Options and asset behaviors can deviate widely from standard geometric Brownian motion assumptions.*
