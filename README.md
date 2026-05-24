@@ -26,7 +26,7 @@ $$d_2 = \frac{\ln(S / K) + (r - 0.5\sigma^2)T}{\sigma\sqrt{T}}$$
 
 ---
 
-## 🛠️ Features
+## Features
 
 * **Live Data Integration:** Seamlessly connects to Alpha Vantage to pull real-time and historical daily closing prices for the `GLD` ETF.
 * **Smart In-Memory Caching:** Limits outbound API requests by caching historical and current prices for 1 hour to prevent hitting free-tier API limits.
@@ -35,13 +35,13 @@ $$d_2 = \frac{\ln(S / K) + (r - 0.5\sigma^2)T}{\sigma\sqrt{T}}$$
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
 * Java Development Kit (JDK) 17 or higher
 * Maven 3.6+
-* An Alpha Vantage API Key ([Get a free key here](https://www.google.com/search?q=https://www.alphavantage.co/support/%23api-key))
+* An Alpha Vantage API Key ([Get a free key here](https://www.alphavantage.co/support/#api-key))
 
 ### 1. Environment Configuration
 
