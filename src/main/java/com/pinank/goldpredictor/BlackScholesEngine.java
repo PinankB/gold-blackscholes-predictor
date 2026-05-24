@@ -1,41 +1,61 @@
 package com.pinank.goldpredictor;
 
+import com.pinank.goldpredictor.service.AlphaVantageService;
 import java.util.Scanner;
 
 public class BlackScholesEngine {
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
+        try {
+            Scanner sc = new Scanner(System.in);
 
-        double S = 3300;
+            AlphaVantageService apiService = new AlphaVantageService();
 
-        System.out.println("What is the predicted price?");
-        double K = sc.nextDouble();
+            System.out.println("=== Gold Price Prediction System ===\n");
+            System.out.println("Fetching live gold (GLD ETF) prices...\n");
 
-        System.out.println("What day is today?");
-        String dayString = sc.next().toUpperCase();
-        Day day = Day.valueOf(dayString);
-        int remainingDays = TradingCalendar.getRemainingTradingDays(day);
-        double T = remainingDays / 252.0;
+            double S = apiService.fetchCurrentPrice();
+            double[] prices = apiService.fetchHistoricalPrices();
 
-        double[] prices = {3250.0, 3270.0, 3260.0, 3300.0, 3285.0, 3310.0};
-        double sigma = VolatilityCalculator.calculateSigma(prices);
+            System.out.println("Current gold price: $" + String.format("%.2f", S));
+            System.out.println("Fetched " + prices.length + " days of historical data\n");
 
-        double r = 0.0439;
+            System.out.print("What is your predicted price? $");
+            double K = sc.nextDouble();
 
-        System.out.println("Will price end above or below target? (ABOVE or BELOW):");
-        String dirInput = sc.next().toUpperCase();
-        Direction direction = Direction.valueOf(dirInput);
+            System.out.print("What day is today? (MONDAY/TUESDAY/WEDNESDAY/THURSDAY/FRIDAY): ");
+            String dayString = sc.next().toUpperCase();
+            Day day = Day.valueOf(dayString);
+            int remainingDays = TradingCalendar.getRemainingTradingDays(day);
+            double T = remainingDays / 252.0;
 
-        double prediction = probability(S, K, T, r, sigma, direction);
+            double sigma = VolatilityCalculator.calculateSigma(prices);
+            double r = 0.0439;
 
-        System.out.println("\n=== RESULTS ===");
-        System.out.println("Current price: $" + S);
-        System.out.println("Target price: $" + K);
-        System.out.println("Days remaining: " + remainingDays);
-        System.out.println("Volatility (sigma): " + (sigma * 100) + "%");
-        System.out.println("Probability: " + (prediction * 100) + "% risk-neutral probability");
+            System.out.print("Will price end above or below target? (ABOVE/BELOW): ");
+            String dirInput = sc.next().toUpperCase();
+            Direction direction = Direction.valueOf(dirInput);
 
-        sc.close();
+            double prediction = probability(S, K, T, r, sigma, direction);
+
+            System.out.println("\n" + "=".repeat(50));
+            System.out.println("PREDICTION RESULTS");
+            System.out.println("=".repeat(50));
+            System.out.println("Current price (SPDR Gold Trust):    $" + String.format("%.2f", S));
+            System.out.println("Target price:     $" + String.format("%.2f", K));
+            System.out.println("Direction:        " + direction);
+            System.out.println("Days remaining:   " + remainingDays);
+            System.out.println("Volatility (σ):   " + String.format("%.2f%%", sigma * 100));
+            System.out.println("Risk-free rate:   " + String.format("%.2f%%", r * 100));
+            System.out.println("-".repeat(50));
+            System.out.println("PROBABILITY:      " + String.format("%.2f%%", prediction * 100));
+            System.out.println("=".repeat(50));
+
+            sc.close();
+
+        } catch (Exception e) {
+            System.err.println(" Error: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public static double probability(double S, double K, double T,
